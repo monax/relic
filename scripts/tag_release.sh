@@ -30,11 +30,11 @@ read -p "Do you want to continue? [Y\n]: " -r
 echo
 
 # Create tag
-echo "Tagging version $version with message:"echo
+echo "Tagging version $version with message:"
 echo ""
 echo "$notes"
 echo ""
-echo "$notes" | git tag -a ${version} -F-
+echo "$notes" | git tag -s -a ${version} -F-
 
 # Push tag
 git push origin ${version}

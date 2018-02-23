@@ -12,7 +12,7 @@ import (
 // changes to the command line to automate releases and provide a single
 // source of truth for improved certainty around versions and releases
 type History struct {
-	ProjectName       string
+	Name              string
 	Releases          []Release
 	ChangelogTemplate *template.Template
 }
@@ -22,17 +22,17 @@ type Release struct {
 	Notes   string
 }
 
-var DefaultChangelogTemplate = template.Must(template.New("changelog_template").
-	Parse(`# {{ .ProjectName }} Changelog{{ range .Releases }}
+var DefaultChangelogTemplate = template.Must(template.New("default_changelog_template").
+	Parse(`# {{ .Name }} Changelog{{ range .Releases }}
 ## Version {{ .Version }}
 {{ .Notes }}
 {{ end }}`))
 
 // Define a new project history to which releases can be added in code
-// e.g. var Project = relic.NewHistory().MustRecordReleases(...)
-func NewHistory(projectName string) *History {
+// e.g. var Project = relic.NewHistory().MustDeclareReleases(...)
+func NewHistory(name string) *History {
 	return &History{
-		ProjectName:       projectName,
+		Name:              name,
 		ChangelogTemplate: DefaultChangelogTemplate,
 	}
 }
@@ -46,7 +46,7 @@ func (h *History) WithChangelogTemplate(tmpl *template.Template) *History {
 // Adds releases to the History with the newest releases provided first (so latest is at top).
 // Releases can be specified by pairs of version (string or struct), notes (string) or by sequence of Release (struct)
 // or mixtures thereof.
-func (h *History) RecordReleases(releaseLikes ...interface{}) (*History, error) {
+func (h *History) DeclareReleases(releaseLikes ...interface{}) (*History, error) {
 	var rs []Release
 	for i := 0; i < len(releaseLikes); i++ {
 		switch r := releaseLikes[i].(type) {
@@ -93,9 +93,9 @@ func (h *History) RecordReleases(releaseLikes ...interface{}) (*History, error) 
 	return h, err
 }
 
-// Like RecordReleases but will panic if the Releases list becomes invalid
-func (h *History) MustRecordReleases(releaseLikes ...interface{}) *History {
-	h, err := h.RecordReleases(releaseLikes...)
+// Like DeclareReleases but will panic if the Releases list becomes invalid
+func (h *History) MustDeclareReleases(releaseLikes ...interface{}) *History {
+	h, err := h.DeclareReleases(releaseLikes...)
 	if err != nil {
 		panic(fmt.Errorf("could not register releases: %v", err))
 	}
