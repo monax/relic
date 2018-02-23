@@ -1,0 +1,22 @@
+
+defaults: &defaults
+  working_directory: /go/src/github.com/monax/relic
+  docker:
+    - image: circleci/golang:1.9.3
+
+# Start of CircleCI 2.0 config
+version: 2
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make test
+
+workflows:
+
+  version: 2
+  test:
+    jobs:
+      - test
+
