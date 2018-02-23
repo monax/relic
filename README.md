@@ -1,16 +1,16 @@
 # Relic
-Relic is a small library to help with versioning your projects by storing release metadata 
+Relic is a library to help with versioning your projects by storing release metadata 
 and versions as code.
 
 ## Purpose
 Relic allows you define your project version history in a declarative style by
 defining a `History` object somewhere in your project whose methods allow you to
-add releases defined by a version and release notes. It ensures you releases form
-a valid monotonic progression of semantic version compliant tagged releases. 
+declare releases defined by a version number and release note. It ensures your releases
+have monotonically increasing unique versions. 
 
-From this is can generate the current version and a complete changelog using this information.
+Relic can generate the current version and a complete changelog using this information.
 
-By keeping the changelog with the version they are syncrhonised and you are reminded to produce 
+By keeping the changelog with the version they are synchronised and you are reminded to produce 
 the changelog.
 
 ## Usage
@@ -19,16 +19,20 @@ the changelog.
 package project
 
 import (
-	"fmt" 
-    "text/template"
+	"fmt"
+	"text/template"
 	"github.com/monax/relic"
 )
 
 // Create a global variable in which to store your project history.
 // MustDeclareReleases allows you to declare your releases by specifying a version and release note
 // for each release. To add a new release just insert it at the top.
-var Project = relic.NewHistory("Relic").
+var history relic.ImmutableHistory = relic.NewHistory("Relic").
 	MustDeclareReleases(
+		"1.1.0",
+		`Add ImmutableHistory and tweak suggested usage docs`,
+		"1.0.1",
+		`Documentation fixes and typos`,
 		"1.0.0",
 		`Minor improvements:
 - Rename RecordReleases to DeclareReleases (breaking API change)
@@ -45,11 +49,11 @@ var Project = relic.NewHistory("Relic").
 
 func PrintReleaseInfo() {
 	// Print the current version
-	fmt.Printf("%s (Version: %v)\n", Project.Name, Project.CurrentVersion().String())
+	fmt.Printf("%s (Version: %v)\n", history.Project(), history.CurrentVersion().String())
 	// Print the complete changelog 
-	fmt.Println(Project.Changelog())
+	fmt.Println(history.Changelog())
 	// Get specific release
-	release, err := Project.Release("0.0.1")
+	release, err := history.Release("0.0.1")
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +61,7 @@ func PrintReleaseInfo() {
 	fmt.Printf("Release Major version: %v", release.Version.Major())
 }
 
-//
+// You can also define histories with a custom template
 var ProjectWithTemplate = relic.NewHistory("Test Project").
 		WithChangelogTemplate(template.Must(template.New("tests").
 			Parse("{{range .Releases}}{{$.Name}} (v{{.Version}}): {{.Notes}}\n{{end}}"))).

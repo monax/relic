@@ -18,7 +18,7 @@ fix:
 
 # test burrow
 .PHONY: test
-test: check
+test: check docs
 	@go test ./...
 
 ### Release and versioning
@@ -34,7 +34,10 @@ CHANGELOG.md: ./project/releases.go
 NOTES.md: ./project/releases.go
 	@go run ./project/cmd/notes/main.go > NOTES.md
 
+.PHONY: docs
+docs: CHANGELOG.md NOTES.md
+
 # Tag a release a push it
 .PHONY: tag_release
-tag_release: test check CHANGELOG.md NOTES.md
+tag_release: test check
 	@scripts/tag_release.sh

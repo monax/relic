@@ -12,10 +12,28 @@ import (
 // changes to the command line to automate releases and provide a single
 // source of truth for improved certainty around versions and releases
 type History struct {
-	Name              string
+	ProjectName       string
 	Releases          []Release
 	ChangelogTemplate *template.Template
 }
+
+// Provides the read-only methods of History to ensure releases are not accidentally mutated when it is not intended
+type ImmutableHistory interface {
+	// Get latest version
+	CurrentVersion() Version
+	// Get latest release note
+	CurrentNotes() string
+	// Get the project name
+	Project() string
+	// Get complete changelog
+	Changelog() (string, error)
+	// Get complete changelog or panic if error
+	MustChangelog() string
+	// Find the release specified by Version struct or version string
+	Release(versionLike interface{}) (Release, error)
+}
+
+var _ ImmutableHistory = &History{}
 
 type Release struct {
 	Version Version
@@ -23,16 +41,16 @@ type Release struct {
 }
 
 var DefaultChangelogTemplate = template.Must(template.New("default_changelog_template").
-	Parse(`# {{ .Name }} Changelog{{ range .Releases }}
+	Parse(`# {{ .Project }} Changelog{{ range .Releases }}
 ## Version {{ .Version }}
 {{ .Notes }}
 {{ end }}`))
 
 // Define a new project history to which releases can be added in code
-// e.g. var Project = relic.NewHistory().MustDeclareReleases(...)
-func NewHistory(name string) *History {
+// e.g. var history = relic.NewHistory().MustDeclareReleases(...)
+func NewHistory(projectName string) *History {
 	return &History{
-		Name:              name,
+		ProjectName:       projectName,
 		ChangelogTemplate: DefaultChangelogTemplate,
 	}
 }
@@ -61,8 +79,8 @@ func (h *History) DeclareReleases(releaseLikes ...interface{}) (*History, error)
 				return nil, fmt.Errorf("could not interpret %v as a version: %v", r, err)
 			}
 			if i+1 >= len(releaseLikes) {
-				return nil, fmt.Errorf("when specifying releases in pairs of version, notes you must provide "+
-					"both, but the last release (for version %s) has no notes", version.String())
+				return nil, fmt.Errorf("when specifying releases in pairs of version and note you must provide "+
+					"both, but the last release (for version %s) has no note", version.String())
 			}
 			release := Release{
 				Version: version,
@@ -76,6 +94,9 @@ func (h *History) DeclareReleases(releaseLikes ...interface{}) (*History, error)
 			default:
 				return nil, fmt.Errorf("release element %v should be notes but cannot be converted to string",
 					releaseLikes[i+1])
+			}
+			if release.Notes == "" {
+				return nil, fmt.Errorf("release note for version %s is empty", version.String())
 			}
 			rs = append(rs, release)
 			// consume an additional element
@@ -111,6 +132,10 @@ func (h *History) CurrentNotes() string {
 	return h.Releases[0].Notes
 }
 
+func (h *History) Project() string {
+	return h.ProjectName
+}
+
 // Gets the Release for version given in versionString
 func (h *History) Release(versionLike interface{}) (Release, error) {
 	version, err := AsVersion(versionLike)
@@ -127,24 +152,21 @@ func (h *History) Release(versionLike interface{}) (Release, error) {
 
 // Get the changelog for the complete history
 func (h *History) Changelog() (string, error) {
-	return h.ChangelogForReleases(h.ChangelogTemplate)
+	buf := new(bytes.Buffer)
+	err := h.ChangelogTemplate.Execute(buf, h)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
+// Generates changelog, panicking if there is an error
 func (h *History) MustChangelog() string {
 	changelog, err := h.Changelog()
 	if err != nil {
 		panic(err)
 	}
 	return changelog
-}
-
-func (h *History) ChangelogForReleases(changelogTemplate *template.Template) (string, error) {
-	buf := new(bytes.Buffer)
-	err := changelogTemplate.Execute(buf, h)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
 }
 
 // Checks that a sequence of releases are monotonically decreasing with each

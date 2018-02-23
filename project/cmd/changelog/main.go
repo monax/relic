@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(project.Project.MustChangelog())
+	fmt.Println(project.History.MustChangelog())
 }

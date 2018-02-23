@@ -145,6 +145,18 @@ func TestHistory_DeclareReleases(t *testing.T) {
 	if err == nil {
 		t.Errorf("error expected")
 	}
+
+	_, err = history.DeclareReleases(
+		"1.0.0",
+		"finally",
+		"0.2.1",
+		"",
+		"0.2.0",
+		"Came after 0.1.0",
+	)
+	if err == nil {
+		t.Errorf("error expected")
+	}
 }
 
 func TestHistory_DeclareReleases_Multiple(t *testing.T) {
@@ -204,7 +216,7 @@ func TestHistory_DeclareReleases_Multiple(t *testing.T) {
 func TestHistory_WithChangelogTemplate(t *testing.T) {
 	history, err := NewHistory("Test Project").
 		WithChangelogTemplate(template.Must(template.New("tests").
-			Parse("{{range .Releases}}{{$.Name}} (v{{.Version}}): {{.Notes}}\n{{end}}"))).
+			Parse("{{range .Releases}}{{$.Project}} (v{{.Version}}): {{.Notes}}\n{{end}}"))).
 		DeclareReleases(
 			"0.1.0",
 			"Basic functionality",

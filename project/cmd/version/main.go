@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(project.Project.CurrentVersion().String())
+	fmt.Println(project.History.CurrentVersion().String())
 }

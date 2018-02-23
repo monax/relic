@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(project.Project.CurrentNotes())
+	fmt.Println(project.History.CurrentNotes())
 }
