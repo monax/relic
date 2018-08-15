@@ -27,11 +27,11 @@ version:
 	@go run ./project/cmd/version/main.go
 
 # Generate full changelog of all release notes
-CHANGELOG.md: ./project/releases.go
+CHANGELOG.md: ./project/releases.go history.go
 	@go run ./project/cmd/changelog/main.go > CHANGELOG.md
 
 # Generated release notes for this version
-NOTES.md: ./project/releases.go
+NOTES.md: ./project/releases.go history.go
 	@go run ./project/cmd/notes/main.go > NOTES.md
 
 .PHONY: docs
@@ -39,5 +39,5 @@ docs: CHANGELOG.md NOTES.md
 
 # Tag a release a push it
 .PHONY: tag_release
-tag_release: test check
+tag_release: test check docs
 	@scripts/tag_release.sh

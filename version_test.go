@@ -22,14 +22,14 @@ func TestParseVersion(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if uint8(23) != version.Major() {
+	if uint8(23) != version.Major {
 		t.Errorf("Major numbers should match when parsed")
 	}
-	if uint8(255) != version.Minor() {
+	if uint8(255) != version.Minor {
 		t.Errorf("Minor numbers should match when parsed")
 
 	}
-	if uint8(1) != version.Patch() {
+	if uint8(1) != version.Patch {
 		t.Errorf("Patch numbers should match when parsed")
 	}
 
