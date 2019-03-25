@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/monax/relic/project"
+	"github.com/monax/relic/v2/project"
 )
 
 func main() {

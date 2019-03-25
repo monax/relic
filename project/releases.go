@@ -1,9 +1,16 @@
 package project
 
-import "github.com/monax/relic"
+import (
+	"github.com/monax/relic/v2"
+)
 
 var History relic.ImmutableHistory = relic.NewHistory("Relic", "https://github.com/monax/relic").
-	MustDeclareReleases(
+	MustDeclareReleases("",
+		``,
+		"2.1.0 - 2019-03-25",
+		`### Changed
+- Make into Go module at version 2
+`,
 		"2.0.0 - 2018-08-15",
 		`### Changed
 - Versions must start from 0.0.1 (0.0.0 is reserved for unreleased)
